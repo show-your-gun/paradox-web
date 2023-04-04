@@ -49,17 +49,27 @@ jobs:
 
   check_tags:
     runs-on: 'ubuntu-latest'
-    if: ${{ inputs.environment == 'production' && github.ref_type != 'tag' }}
+    if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
     needs:
     - choose_namespace
     steps:
     - 
       name: Checkout
       uses: actions/checkout@v3
+    -
+      name: Development
+      if: ${{ inputs.environment == 'development' && github.ref_type != 'tag' }}
+      run: |
+        echo "Have no tags! Branch [${GITHUB_REF##*/}] would be deployed to development"
+    -
+      name: Production
+      if: ${{ inputs.environment == 'production' && github.ref_type == 'tag' }}
+      run: |
+        echo "Tagged version [${{ github.ref_name }}]! Branch [${GITHUB_REF##*/}] would be deployed to production"
     - 
       name: Fail
       run: |
-        echo "Deploy to production allow on tags only"
+        echo "Deploy failed! Production includes only tagged versions, development excludes tagged versions!"
         exit 1
 
   build_and_push:
@@ -93,7 +103,7 @@ jobs:
       name: Production version Push
       if: ${{ inputs.environment == 'production' && github.ref_type == 'tag' }}
       run: |
-        export
+        echo ${{ github.ref_name }}
 
 #    - 
 #      name: Build and push Docker image

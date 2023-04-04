@@ -30,7 +30,7 @@ env:
   DEVELOPMENT_NS: development
 
 jobs:
-  choose_namespace:
+  choose_enviroment:
     runs-on: 'ubuntu-latest'
     if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
     outputs:
@@ -51,7 +51,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
     needs:
-    - choose_namespace
+    - choose_enviroment
     steps:
     - 
       name: Checkout
@@ -61,11 +61,13 @@ jobs:
       if: ${{ inputs.environment == 'development' && github.ref_type != 'tag' }}
       run: |
         echo "Have no tags! Branch [${GITHUB_REF##*/}] would be deployed to development"
+        exit 0
     -
       name: Production
       if: ${{ inputs.environment == 'production' && github.ref_type == 'tag' }}
       run: |
         echo "Tagged version [${{ github.ref_name }}]! Branch [${GITHUB_REF##*/}] would be deployed to production"
+        exit 0
     - 
       name: Fail
       run: |

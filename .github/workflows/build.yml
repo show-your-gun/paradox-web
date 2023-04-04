@@ -62,20 +62,20 @@ jobs:
       if: ${{ inputs.environment == 'development' && github.ref_type != 'tag' }}
       run: |
         echo "Have no tags! Branch [${GITHUB_REF##*/}] would be deployed to development"
-        exit_with_success
+        exit 0
     -
       id: step_production
       name: Production
       if: ${{ inputs.environment == 'production' && github.ref_type == 'tag' }}
       run: |
         echo "Tagged version [${{ github.ref_name }}]! Branch [${GITHUB_REF##*/}] would be deployed to production"
-        exit_with_success
+        exit 0
     - 
       name: Fail
       if: steps.step_development.conclusion != 'success' || steps.step_production.conclusion != 'success'
       run: |
         echo "Deploy failed! Production includes only tagged versions, development excludes tagged versions!"
-        exit_with_failure
+        exit 1
 
   build_and_push:
     runs-on: 'ubuntu-latest'

@@ -107,7 +107,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:${{ steps.short-sha.outputs.sha }}, ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:latest-dev
+        tags: ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:${{ steps.short-sha.outputs.sha }}-dev, ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:latest-dev
     - 
       name: Build and push Docker image [Production version]
       if: ${{ inputs.environment == 'production' && github.ref_type == 'tag' }}

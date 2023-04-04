@@ -84,10 +84,20 @@ jobs:
       id: short-sha
       with:
         length: 7
-
     - 
-      name: Build and push Docker image
-      uses: docker/build-push-action@v2
-      with:
-        push: true
-        tags: ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:${{ steps.short-sha.outputs.sha }}, ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:latest
+      name: Development version Push
+      if: ${{ inputs.environment == 'development' && github.ref_type != 'tag' }}
+      run: |
+        echo ${{ steps.short-sha.outputs.sha }}
+    - 
+      name: Production version Push
+      if: ${{ inputs.environment == 'production' && github.ref_type == 'tag' }}
+      run: |
+        export
+
+#    - 
+#      name: Build and push Docker image
+#      uses: docker/build-push-action@v2
+#      with:
+#        push: true
+#        tags: ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:${{ steps.short-sha.outputs.sha }}, ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:latest

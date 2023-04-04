@@ -1,0 +1,94 @@
+run-name: ${{ inputs.comment }} [${{ github.ref_name }} ref] ${{ inputs.application }} - ${{ inputs.environment }} by @${{ github.actor }}
+name: Build, Push, Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      application:
+        description: 'Application for deploy'
+        required: true
+        default: paradox-web
+        type: choice
+        options:
+        - paradox-web
+      environment:
+        type: environment
+        required: true
+        description: 'environment to deploy, for prod use workflow from tags'
+        default: development
+      comment:
+        description: "comment"
+        required: true
+        default: "usefull information"
+        type: string
+
+concurrency:
+  group: deploy-${{ github.event.inputs.application }}-${{ github.event.inputs.environment }}
+
+defaults:
+  run:
+    working-directory: ./
+
+env:
+  PRODUCTION_NS: production
+  DEVELOPMENT_NS: development
+
+jobs:
+  choose_namespace:
+    runs-on: 'ubuntu-latest'
+    if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
+    outputs:
+      production_ns: ${{ steps.chosen_namespace.outputs.production }}
+      development_ns: ${{ steps.chosen_namespace.outputs.development }}
+    steps:
+    - 
+      name: Checkout
+      uses: actions/checkout@v3
+    - 
+      name: namespaces
+      id: chosen_namespace
+      run: |
+        echo "production=${PRODUCTION_NS}" >> $GITHUB_OUTPUT
+        echo "development=${DEVELOPMENT_NS}" >> $GITHUB_OUTPUT
+
+  check_tags:
+    runs-on: 'ubuntu-latest'
+    if: ${{ inputs.environment == 'production' && github.ref_type != 'tag' }}
+    steps:
+    - 
+      name: Checkout
+      uses: actions/checkout@v3
+    - 
+      name: Fail
+      run: |
+        echo "Deploy to production allow on tags only"
+        exit 1
+
+  build_and_push:
+    runs-on: 'ubuntu-latest'
+    needs:
+    - choose_namespace
+    - check_tags
+    steps:
+    - 
+      name: Checkout
+      uses: actions/checkout@v3
+    - 
+      name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_LOGIN }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - 
+      name: Get short sha
+      uses: benjlevesque/short-sha@v1.2
+      id: short-sha
+      with:
+        length: 7
+
+    - 
+      name: Build and push Docker image
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:${{ steps.short-sha.outputs.sha }}, ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:latest

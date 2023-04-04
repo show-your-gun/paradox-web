@@ -74,7 +74,7 @@ jobs:
         exit 0
     - 
       name: Fail
-      if: steps.*.conclusion == 'skipped'
+      if: steps.step_development.conclusion == 'skipped' && steps.step_production.conclusion == 'skipped'
       run: |
         echo "Deploy failed! Production includes only tagged versions, development excludes tagged versions!"
         exit 1

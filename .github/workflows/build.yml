@@ -49,7 +49,7 @@ jobs:
 
   check_tags:
     runs-on: 'ubuntu-latest'
-    if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
+    if: ${{ inputs.environment == 'production' && github.ref_type != 'tag' }}
     needs:
     - choose_namespace
     steps:

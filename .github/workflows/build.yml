@@ -49,9 +49,9 @@ jobs:
 
   check_tags:
     runs-on: 'ubuntu-latest'
+    if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
     needs:
     - choose_namespace
-    if: ${{ inputs.environment == 'production' && github.ref_type != 'tag' }}
     steps:
     - 
       name: Checkout
@@ -64,6 +64,7 @@ jobs:
 
   build_and_push:
     runs-on: 'ubuntu-latest'
+    if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
     needs:
     - check_tags
     steps:

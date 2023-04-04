@@ -74,10 +74,8 @@ jobs:
         exit 0
     - 
       name: Fail
-      if: steps.step_development.conclusion != 'success' || steps.step_production.conclusion != 'success'
+      if: steps.*.conclusion == 'skipped'
       run: |
-        echo "Dev ${{ steps.step_development.conclusion }}"
-        echo "Prod ${{ steps.step_production.conclusion }}"
         echo "Deploy failed! Production includes only tagged versions, development excludes tagged versions!"
         exit 1
 

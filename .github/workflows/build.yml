@@ -52,6 +52,8 @@ jobs:
     if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
     needs:
     - choose_enviroment
+    outputs:
+      status: ${{ join(steps.*.conclusion) }}
     steps:
     - 
       name: Checkout

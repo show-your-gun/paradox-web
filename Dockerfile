@@ -22,7 +22,7 @@ FROM node:gallium-bullseye-slim
 
 ENV PATH /opt/app/node_modules/.bin:$PATH
 
-LABEL Autor='Alexander Dolgosheev'
+LABEL Author='Alexander Dolgosheev'
 
 WORKDIR /opt/app
 

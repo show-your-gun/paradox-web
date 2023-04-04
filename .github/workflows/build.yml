@@ -70,7 +70,7 @@ jobs:
       name: Production
       if: ${{ inputs.environment == 'production' && github.ref_type == 'tag' }}
       run: |
-        echo "Tagged version [${{ github.ref_name }}]! Branch [${GITHUB_REF##*/}] would be deployed to production"
+        echo "Tagged version [${{ github.ref_name }}] would be deployed to production"
         exit 0
     - 
       name: Fail
@@ -102,19 +102,16 @@ jobs:
       with:
         length: 7
     - 
-      name: Development version Push
+      name: Build and push Docker image [Development version]
       if: ${{ inputs.environment == 'development' && github.ref_type != 'tag' }}
-      run: |
-        echo ${{ steps.short-sha.outputs.sha }}
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:${{ steps.short-sha.outputs.sha }}, ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:latest-dev
     - 
-      name: Production version Push
+      name: Build and push Docker image [Production version]
       if: ${{ inputs.environment == 'production' && github.ref_type == 'tag' }}
-      run: |
-        echo ${{ github.ref_name }}
-
-#    - 
-#      name: Build and push Docker image
-#      uses: docker/build-push-action@v2
-#      with:
-#        push: true
-#        tags: ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:${{ steps.short-sha.outputs.sha }}, ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:latest
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:${{ github.ref_name }}, ${{ secrets.DOCKERHUB_LOGIN }}/paradox-web:latest
